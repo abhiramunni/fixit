@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixIt — Home Maintenance, Sorted</title>
+<meta name="description" content="Every appliance, every service date, every rupee. FixIt keeps your whole home running — services, warranties, filters and repair costs in one tidy workbench.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#faf5ec; --paper2:#f3e9d7; --card:#fffdf7; --ink:#2b1d12; --ink2:#6b5844; --ink3:#9a8468;
+  --line:#e6d9c2; --line2:#d9c6a4; --bronze:#b07d3c; --bronze-d:#8a5f27; --amber:#e8a33d;
+  --terra:#c05b2e; --red:#b3402a; --ok:#8a6d2f; --soon:#c07f1a; --shadow:0 10px 30px rgba(43,29,18,.10);
+  --r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.serif{font-family:'Fraunces',Georgia,serif;line-height:1.12;letter-spacing:-.01em}
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--ink)}
+a{color:var(--bronze-d)}
+::selection{background:var(--amber);color:var(--ink)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.muted{color:var(--ink2)} .small{font-size:13px} .tiny{font-size:12px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid var(--line2);background:#fff}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.st-overdue{color:var(--red);border-color:#ecc9bf;background:#fdf1ec}
+.st-soon{color:var(--soon);border-color:#ecd9ac;background:#fdf6e3}
+.st-ok{color:var(--ok);border-color:#ddd2ae;background:#fbf7e6}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:12px 18px;border-radius:999px;border:1.5px solid var(--ink);background:var(--ink);color:#fdf8ee;transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(43,29,18,.22)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.amber{background:var(--amber);border-color:var(--amber);color:#2b1d12}
+.btn.terra{background:var(--terra);border-color:var(--terra);color:#fff}
+.btn.sm{padding:8px 13px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.icon{width:18px;height:18px;flex:none}
+.icon.lg{width:26px;height:26px}
+/* ---- cinematic intro ---- */
+#intro{position:fixed;inset:0;z-index:200;background:radial-gradient(120% 120% at 50% 0%,#4a2f1a 0%,#2b1d12 55%,#1d120a 100%);color:#f7ead2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:opacity .6s ease,visibility .6s}
+#intro.hide{opacity:0;visibility:hidden;pointer-events:none}
+#intro .logo-mark{width:92px;height:92px;border-radius:26px;background:linear-gradient(145deg,#e8a33d,#c05b2e);display:flex;align-items:center;justify-content:center;box-shadow:0 18px 50px rgba(0,0,0,.45);animation:logoIn 1s cubic-bezier(.2,.9,.3,1.2) both}
+#intro .logo-mark svg{width:52px;height:52px;color:#fff8ec}
+@keyframes logoIn{from{transform:scale(.5) rotate(-18deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+#intro h1{font-size:clamp(44px,9vw,76px);color:#fdf6e6;margin-top:26px;animation:rise .8s .25s ease both}
+#intro .tag{font-size:17px;color:#e5cfa8;margin-top:10px;animation:rise .8s .45s ease both}
+@keyframes rise{from{transform:translateY(18px);opacity:0}to{transform:translateY(0);opacity:1}}
+#introBarWrap{width:min(300px,70vw);height:5px;border-radius:99px;background:rgba(255,255,255,.18);margin-top:34px;overflow:hidden;animation:rise .8s .6s ease both}
+#introBar{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#e8a33d,#c98a4b)}
+#introSkip{margin-top:26px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#d8c49c;border:1px solid rgba(255,255,255,.28);padding:9px 18px;border-radius:99px;animation:rise .8s .7s ease both}
+#introSkip:hover{color:#fff;border-color:#fff}
+/* @@NEXT@@ */
+</style>
+</head>
+<body>
