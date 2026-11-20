@@ -383,4 +383,43 @@ footer b{color:var(--ink)}
       </div>
     </div>
   </section>
+
+  <section class="block" id="ledger">
+    <div class="sec-head"><span class="kicker">The money</span><h2>Repair ledger</h2></div>
+    <p class="sec-sub">Every rupee spent keeping the house running. When one appliance starts eating money, the chart makes it obvious.</p>
+    <div class="ledger-grid">
+      <div>
+        <div class="stat-row">
+          <div class="stat"><span>Spent in 2026</span><b id="repTotal">₹7,520</b><small>6 repairs logged</small></div>
+          <div class="stat"><span>Most expensive</span><b id="repCostliest">₹2,800</b><small id="repCostliestWhat">AC gas top-up</small></div>
+          <div class="stat"><span>Costliest appliance</span><b id="repTopApp">AC</b><small id="repTopAppAmt">₹2,800 · 37% of spend</small></div>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Repair</th><th>Date</th><th style="text-align:right">Cost</th><th></th></tr></thead>
+            <tbody id="repairBody"></tbody>
+          </table>
+        </div>
+        <form class="mini-form" id="repForm">
+          <select id="repApp" aria-label="Appliance"></select>
+          <input id="repWhat" type="text" placeholder="What was fixed? e.g. Door gasket" required maxlength="60">
+          <input id="repDate" type="date" aria-label="Repair date" required>
+          <input id="repCost" type="number" placeholder="Cost ₹" min="0" max="999999" required>
+          <button type="submit" class="btn sm">Log repair</button>
+        </form>
+      </div>
+      <div class="chart-card">
+        <h3>Where the money went</h3>
+        <p>Repair spend per appliance, 2026. If one bar keeps growing year after year, it is cheaper to replace than repair.</p>
+        <canvas id="spendChart" width="340" height="220"></canvas>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="seasonal">
+    <div class="sec-head"><span class="kicker">Once a season</span><h2>Seasonal checklists</h2></div>
+    <p class="sec-sub">Twelve small jobs a year, done before the weather turns. Tick them off as you go — your ticks are saved on this device.</p>
+    <div class="season-grid" id="seasonalWrap"></div>
+  </section>
 <!-- @@NEXT@@ -->
