@@ -696,4 +696,54 @@ function renderPegboard(now){
       '</article>';
   }).join('');
 }
+
+/* ---------- 90-day calendar ---------- */
+function calEvents(now){
+  var ev = [];
+  state.appliances.forEach(function(a){
+    var d = daysUntil(nextService(a), now);
+    if (d >= 0 && d <= 90) ev.push({date:nextService(a), days:d, title:a.name + ' — service due', sub:a.brand + ' · ' + a.room + ' · every ' + a.intervalMonths + ' months', kind: d <= 14 ? 'soon' : '', id:a.id});
+  });
+  state.consumables.forEach(function(c){
+    var due = addMonths(c.last, c.everyMonths);
+    var d = daysUntil(due, now);
+    if (d >= 0 && d <= 90) ev.push({date:due, days:d, title:c.name + ' — change due', sub:(appById(c.app) ? appById(c.app).name : '') + ' · ' + c.note, kind: d <= 14 ? 'soon' : '', id:c.app});
+  });
+  ev.sort(function(x, y){ return x.days - y.days || (x.date < y.date ? -1 : 1); });
+  return ev;
+}
+function renderCalendar(now){
+  var ev = calEvents(now);
+  document.getElementById('calCount').textContent = ev.length + ' job' + (ev.length===1?'':'s') + ' coming up';
+  var list = document.getElementById('calList');
+  if (!ev.length){ list.innerHTML = '<p class="muted">Nothing scheduled in the next 90 days. Add an appliance or log a service and the calendar fills itself.</p>'; return; }
+  list.innerHTML = ev.map(function(e){
+    return '<div class="tl-item ' + e.kind + '">' +
+      '<div class="tl-date">' + fmtDate(e.date) + ' · ' + whenText(e.days) + '</div>' +
+      '<h3>' + esc(e.title) + '</h3><p>' + esc(e.sub) + '</p>' +
+      (e.id ? '<button type="button" class="link-btn" data-open="' + e.id + '">Open appliance</button>' : '') +
+      '</div>';
+  }).join('');
+}
+
+/* ---------- warranty wall ---------- */
+function renderWarranty(now){
+  var wall = document.getElementById('warrantyWall');
+  var items = state.appliances.map(function(a){ return {a:a, w:warrantyStatus(a, now)}; })
+    .sort(function(x, y){ return x.w.days - y.w.days; });
+  wall.innerHTML = items.map(function(x){
+    var a = x.a, w = x.w;
+    var total = Math.max(1, a.warrantyYears * 365);
+    var frac = Math.max(0, Math.min(1, w.days / total));
+    var circ = 2 * Math.PI * 31;
+    var col = w.key === 'expired' ? '#b3402a' : (w.key === 'ending' ? '#c07f1a' : '#8a6d2f');
+    var val = w.key === 'expired' ? Math.abs(w.days) + 'd ago' : (w.days > 365 ? Math.floor(w.days/365) + 'y ' + (w.days%365) + 'd' : w.days + 'd');
+    var sub = w.key === 'expired' ? 'Expired ' + fmtDate(warrantyEnd(a)) + ' — repairs are on you now.' : 'Cover till ' + fmtDate(warrantyEnd(a)) + ' · bought ' + fmtDate(a.bought);
+    return '<div class="war-card' + (w.key === 'expired' ? ' exp' : '') + '">' +
+      '<div class="war-ring"><svg viewBox="0 0 74 74"><circle cx="37" cy="37" r="31" fill="none" stroke="#efe4cd" stroke-width="6"/>' +
+      '<circle cx="37" cy="37" r="31" fill="none" stroke="' + col + '" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (frac*circ).toFixed(1) + ' ' + circ.toFixed(1) + '"/></svg>' +
+      '<div class="wv"><b>' + val + '</b><span>' + (w.key === 'expired' ? 'expired' : 'left') + '</span></div></div>' +
+      '<div><h4>' + esc(a.name) + '</h4><p>' + sub + '</p></div></div>';
+  }).join('');
+}
 <!-- @@NEXT@@ -->
