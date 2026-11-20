@@ -898,4 +898,106 @@ function closeDrawer(){
   document.getElementById('drawer').classList.remove('show');
   document.getElementById('drawerVeil').classList.remove('show');
 }
+
+/* ---------- render all + actions ---------- */
+function renderAll(now){
+  now = now || new Date();
+  renderAttention(now);
+  renderPegboard(now);
+  renderCalendar(now);
+  renderWarranty(now);
+  renderConsumables(now);
+  renderSeasonal();
+  renderLedger(now);
+}
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function markServiced(id){
+  var a = appById(id); if (!a) return;
+  a.lastService = todayStr();
+  save(); renderAll(); closeDrawer();
+  toast(a.name + ' marked serviced today. Next due ' + fmtDate(nextService(a)) + '.');
+}
+function markConsumable(id){
+  var c = null;
+  state.consumables.forEach(function(x){ if (x.id === id) c = x; });
+  if (!c) return;
+  c.last = todayStr();
+  save(); renderAll();
+  toast(c.name + ' marked changed. Next due ' + fmtDate(addMonths(c.last, c.everyMonths)) + '.');
+}
+function copySummary(){
+  var now = new Date();
+  var c = attentionCounts(now);
+  var lines = ['FIXIT — MY HOME SUMMARY (' + fmtDate(todayStr(now)) + ')'];
+  lines.push(state.appliances.length + ' appliances · ' + c.overdue + ' overdue · ' + c.soon + ' due soon · ' + c.ok + ' on track');
+  state.appliances.forEach(function(a){
+    var s = statusOf(a, now);
+    lines.push('- ' + a.name + ' (' + a.brand + '): ' + s.label + ' — ' + whenText(s.days) + ', next ' + fmtDate(nextService(a)));
+  });
+  lines.push('Repairs in ' + now.getFullYear() + ': ' + fmtINR(totalSpent(now.getFullYear())) + ' across ' + state.repairs.length + ' jobs.');
+  var txt = lines.join('\n');
+  function done(){ window.__copied = txt; toast('Summary copied. Paste it anywhere.'); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, function(){ fallbackCopy(txt); done(); });
+  } else { fallbackCopy(txt); done(); }
+}
+function fallbackCopy(txt){
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  } catch (e) {}
+}
+
+/* ---------- coach ---------- */
+var COACH = [
+  {t:'The pegboard is your wall', x:'Every appliance in your home gets one card, with a ring showing how much of its service interval is left. When a ring runs out, the card moves to the attention board at the top.'},
+  {t:'Mark it done, forget about it', x:'Tap “Mark serviced” the day a technician visits, and FixIt restarts the clock. Change a filter, tap “Mark changed” — the consumables list keeps itself.'},
+  {t:'The ledger spots money pits', x:'Log every repair with its cost. When one appliance’s bar keeps growing in the chart, it is cheaper to replace it than repair it again.'}
+];
+var coachStep = 0;
+function showCoach(step){
+  coachStep = step;
+  document.getElementById('coachStep').textContent = 'Step ' + (step+1) + ' of 3';
+  document.getElementById('coachTitle').textContent = COACH[step].t;
+  document.getElementById('coachText').textContent = COACH[step].x;
+  document.getElementById('coachNext').textContent = step === 2 ? 'Done' : 'Next';
+  var dots = document.getElementById('coachDots').children;
+  for (var i=0;i<dots.length;i++) dots[i].classList.toggle('on', i === step);
+  document.getElementById('coachVeil').classList.add('show');
+}
+function hideCoach(){
+  document.getElementById('coachVeil').classList.remove('show');
+  try { localStorage.setItem('fixit_coach', '1'); } catch (e) {}
+}
+
+/* ---------- intro ---------- */
+var introDone = false;
+function finishIntro(){
+  if (introDone) return;
+  introDone = true;
+  document.getElementById('intro').classList.add('hide');
+  try { localStorage.setItem('fixit_seen', '1'); } catch (e) {}
+}
+function runIntro(){
+  var seen = null;
+  try { seen = localStorage.getItem('fixit_seen'); } catch (e) {}
+  var bar = document.getElementById('introBar');
+  var dur = seen ? 900 : 3800;
+  var t0 = Date.now();
+  function tick(){
+    if (introDone) return;
+    var p = Math.min(1, (Date.now() - t0) / dur);
+    bar.style.width = (p * 100) + '%';
+    if (p >= 1) finishIntro(); else setTimeout(tick, 60);
+  }
+  tick();
+}
 <!-- @@NEXT@@ -->
