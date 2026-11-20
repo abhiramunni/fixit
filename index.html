@@ -746,4 +746,43 @@ function renderWarranty(now){
       '<div><h4>' + esc(a.name) + '</h4><p>' + sub + '</p></div></div>';
   }).join('');
 }
+
+/* ---------- consumables ---------- */
+function renderConsumables(now){
+  var list = document.getElementById('consList');
+  var items = state.consumables.map(function(c){
+    var due = addMonths(c.last, c.everyMonths);
+    var days = daysUntil(due, now);
+    var total = Math.max(1, c.everyMonths * 30);
+    var used = Math.max(0, Math.min(1, 1 - days / total));
+    return {c:c, due:due, days:days, used:used};
+  }).sort(function(x, y){ return x.days - y.days; });
+  list.innerHTML = items.map(function(x){
+    var c = x.c, over = x.days < 0;
+    var pct = Math.round(x.used * 100);
+    return '<div class="cons-card">' +
+      '<div class="cons-top"><h4>' + esc(c.name) + '</h4>' +
+      '<span class="pill ' + (over ? 'st-overdue' : (x.days <= 30 ? 'st-soon' : 'st-ok')) + '"><span class="dot"></span>' + (over ? 'Overdue' : whenText(x.days)) + '</span></div>' +
+      '<div class="cons-bar' + (over ? ' over' : '') + '"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="cons-meta"><span>Last changed: <b>' + fmtDate(c.last) + '</b></span><span>Due: <b>' + fmtDate(x.due) + '</b></span><span>Every ' + c.everyMonths + ' mo</span></div>' +
+      '<p class="small muted" style="margin-top:8px">' + esc(c.note) + '</p>' +
+      '<button type="button" class="btn ghost sm" data-consume="' + c.id + '">Mark changed today</button>' +
+      '</div>';
+  }).join('');
+}
+
+/* ---------- seasonal checklists ---------- */
+function renderSeasonal(){
+  var wrap = document.getElementById('seasonalWrap');
+  wrap.innerHTML = Object.keys(state.seasonal).map(function(key){
+    var s = state.seasonal[key];
+    var done = state.seasonalDone[key] || [];
+    var rows = s.items.map(function(it, i){
+      var on = done.indexOf(i) !== -1;
+      return '<label class="check-row' + (on ? ' done' : '') + '"><input type="checkbox" data-season="' + key + '" data-idx="' + i + '"' + (on ? ' checked' : '') + '><span>' + esc(it) + '</span></label>';
+    }).join('');
+    return '<div class="season-card"><h3>' + esc(s.label) + '</h3><div class="when">' + esc(s.when) + ' · ' + done.length + ' of ' + s.items.length + ' done</div>' +
+      '<div class="prog">' + (done.length === s.items.length ? 'All done — this season is sorted.' : 'Tick each job as you finish it.') + '</div>' + rows + '</div>';
+  }).join('');
+}
 <!-- @@NEXT@@ -->
