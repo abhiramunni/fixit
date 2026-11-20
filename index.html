@@ -1000,4 +1000,127 @@ function runIntro(){
   }
   tick();
 }
-<!-- @@NEXT@@ -->
+
+/* ---------- boot + events ---------- */
+function bindEvents(){
+  document.getElementById('introSkip').addEventListener('click', finishIntro);
+  document.getElementById('intro').addEventListener('click', function(e){ if (e.target.id === 'intro') finishIntro(); });
+  document.getElementById('todayDate').textContent = fmtDate(todayStr());
+  document.getElementById('filterChips').addEventListener('click', function(e){
+    var b = e.target.closest('[data-filter]'); if (!b) return;
+    currentFilter = b.getAttribute('data-filter');
+    Array.prototype.forEach.call(document.querySelectorAll('.fchip'), function(x){ x.classList.toggle('on', x === b); });
+    renderPegboard(new Date());
+  });
+  document.getElementById('addToggle').addEventListener('click', function(){
+    var s = document.getElementById('addSection');
+    s.scrollIntoView({behavior:'smooth', block:'start'});
+    var n = document.getElementById('apName'); if (n) n.focus();
+  });
+  document.getElementById('coachBtn').addEventListener('click', function(){ showCoach(0); });
+  document.getElementById('coachNext').addEventListener('click', function(){ if (coachStep < 2) showCoach(coachStep+1); else hideCoach(); });
+  document.getElementById('coachSkip').addEventListener('click', hideCoach);
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('drawerVeil').addEventListener('click', closeDrawer);
+  document.getElementById('copySummary').addEventListener('click', copySummary);
+  document.getElementById('removeSamples').addEventListener('click', function(){
+    if (!state.samples){ toast('Sample data is already gone — this is all yours now.'); return; }
+    state.appliances = []; state.repairs = []; state.consumables = []; state.samples = false;
+    save(); renderAll(); toast('Samples removed. Add your own appliances to start.');
+  });
+  var eraseArmed = false;
+  document.getElementById('eraseAll').addEventListener('click', function(){
+    var btn = document.getElementById('eraseAll');
+    if (!eraseArmed){ eraseArmed = true; btn.textContent = 'Tap again to erase everything'; setTimeout(function(){ eraseArmed = false; btn.textContent = 'Erase everything'; }, 4000); return; }
+    try { localStorage.removeItem(KEY); localStorage.removeItem('fixit_seen'); localStorage.removeItem('fixit_coach'); } catch (e) {}
+    state = clone(SEED); state.samples = true; save(); renderAll();
+    toast('Erased. Fresh sample home loaded.');
+  });
+  document.getElementById('apReset').addEventListener('click', function(){ document.getElementById('apForm').reset(); });
+  document.getElementById('apForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('apName').value.trim();
+    var bought = document.getElementById('apBought').value;
+    var last = document.getElementById('apLast').value;
+    if (!name || !bought || !last){ toast('Fill in the name, bought date and last service date.'); return; }
+    state.appliances.push({
+      id: uid('a'), name: name, brand: document.getElementById('apBrand').value.trim() || '—',
+      room: document.getElementById('apRoom').value.trim() || 'Home',
+      bought: bought, warrantyYears: Math.max(0, +document.getElementById('apWarranty').value || 0),
+      lastService: last, intervalMonths: Math.max(1, +document.getElementById('apInterval').value || 12),
+      icon: 'wrench'
+    });
+    save(); renderAll();
+    document.getElementById('apForm').reset();
+    toast(name + ' is on the pegboard.');
+  });
+  document.getElementById('repForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var what = document.getElementById('repWhat').value.trim();
+    var cost = +document.getElementById('repCost').value;
+    var date = document.getElementById('repDate').value;
+    if (!what || !(cost >= 0) || !date){ toast('Fill in what was fixed, the date and the cost.'); return; }
+    state.repairs.push({id: uid('r'), app: document.getElementById('repApp').value, what: what, date: date, cost: cost});
+    save(); renderAll();
+    document.getElementById('repWhat').value = ''; document.getElementById('repCost').value = '';
+    toast('Repair logged: ' + what + ' · ' + fmtINR(cost));
+  });
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-open],[data-service],[data-consume],[data-delrep],[data-delapp],[data-gtoggle]');
+    if (!t) return;
+    if (t.hasAttribute('data-open')) openDrawer(t.getAttribute('data-open'));
+    else if (t.hasAttribute('data-service')) markServiced(t.getAttribute('data-service'));
+    else if (t.hasAttribute('data-consume')) markConsumable(t.getAttribute('data-consume'));
+    else if (t.hasAttribute('data-gtoggle')){
+      var g = t.closest('.guide'); if (g) g.classList.toggle('open');
+    }
+    else if (t.hasAttribute('data-delrep')){
+      state.repairs = state.repairs.filter(function(r){ return r.id !== t.getAttribute('data-delrep'); });
+      save(); renderAll(); toast('Repair deleted.');
+    }
+    else if (t.hasAttribute('data-delapp')){
+      var id = t.getAttribute('data-delapp');
+      var a = appById(id);
+      state.appliances = state.appliances.filter(function(x){ return x.id !== id; });
+      state.repairs = state.repairs.filter(function(r){ return r.app !== id; });
+      state.consumables = state.consumables.filter(function(c){ return c.app !== id; });
+      save(); renderAll(); closeDrawer();
+      toast((a ? a.name : 'Appliance') + ' removed from the wall.');
+    }
+  });
+  document.getElementById('seasonalWrap').addEventListener('change', function(e){
+    var cb = e.target.closest('[data-season]'); if (!cb) return;
+    var key = cb.getAttribute('data-season'), idx = +cb.getAttribute('data-idx');
+    var done = state.seasonalDone[key] || (state.seasonalDone[key] = []);
+    var pos = done.indexOf(idx);
+    if (cb.checked && pos === -1) done.push(idx);
+    if (!cb.checked && pos !== -1) done.splice(pos, 1);
+    save(); renderSeasonal();
+  });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeDrawer(); });
+}
+
+function boot(){
+  var d = new Date();
+  document.getElementById('repDate').value = todayStr(d);
+  renderGuides();
+  bindEvents();
+  renderAll(d);
+  runIntro();
+  var coached = null;
+  try { coached = localStorage.getItem('fixit_coach'); } catch (e) {}
+  if (!coached) setTimeout(function(){ if (!introDone) return; showCoach(0); }, 4200);
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+
+window.FixIt = {
+  parseD: parseD, addMonths: addMonths, daysUntil: daysUntil, fmtDate: fmtDate, fmtINR: fmtINR,
+  nextService: nextService, warrantyEnd: warrantyEnd, statusOf: statusOf, warrantyStatus: warrantyStatus,
+  whenText: whenText, attentionCounts: attentionCounts, totalSpent: totalSpent, spendByApp: spendByApp,
+  calEvents: calEvents, markServiced: markServiced, markConsumable: markConsumable,
+  state: function(){ return state; }, renderAll: renderAll, SEED: SEED
+};
+</script>
+</body>
+</html>
