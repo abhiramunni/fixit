@@ -450,4 +450,41 @@ footer b{color:var(--ink)}
       </form>
     </div>
   </section>
+
+  <section class="block" id="settings">
+    <div class="sec-head"><span class="kicker">Your data, on your device</span><h2>Take it with you</h2></div>
+    <p class="sec-sub">Everything you add lives in this browser only — no account, no cloud, nothing leaves your device.</p>
+    <div class="settings-row">
+      <button type="button" class="btn" id="copySummary">Copy my home summary</button>
+      <button type="button" class="btn ghost" id="removeSamples">Remove sample data</button>
+      <button type="button" class="btn ghost" id="eraseAll">Erase everything</button>
+    </div>
+  </section>
+
+  <footer>
+    <b>FixIt</b> — a single-file app. Your appliances, services, warranties and repair costs are stored only in this browser (localStorage).<br>
+    Service intervals and costs shown are typical for Indian homes — check your appliance manual and your brand’s service centre for exact schedules. Never open a gas appliance, a geyser’s electricals or an inverter battery yourself; those jobs are for a qualified technician.
+  </footer>
+</main>
+
+<div class="drawer-veil" id="drawerVeil"></div>
+<aside class="drawer" id="drawer" aria-label="Appliance details">
+  <button type="button" class="btn ghost sm" id="drawerClose">← Back to the wall</button>
+  <div id="drawerBody"></div>
+</aside>
+
+<div class="coach-veil" id="coachVeil" role="dialog" aria-label="Quick tour">
+  <div class="coach-card">
+    <div class="c-step" id="coachStep">Step 1 of 3</div>
+    <h3 id="coachTitle">The pegboard is your wall</h3>
+    <p id="coachText">Every appliance in your home gets one card, with a ring showing how much of its service interval is left. When a ring runs out, the card moves to the attention board at the top.</p>
+    <div class="coach-dots" id="coachDots"><i class="on"></i><i></i><i></i></div>
+    <div class="coach-actions">
+      <button type="button" class="btn ghost sm" id="coachSkip">Skip tour</button>
+      <button type="button" class="btn amber sm" id="coachNext">Next</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
 <!-- @@NEXT@@ -->
