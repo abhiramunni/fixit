@@ -176,4 +176,55 @@ section.block{margin-top:46px}
 .kit-card .kit-cap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;background:linear-gradient(180deg,transparent,rgba(29,18,10,.82));color:#fdf6e6}
 .kit-card .kit-cap h3{font-size:21px}
 .kit-card .kit-cap p{font-size:13.5px;color:#ecd9ae;margin-top:4px}
+
+/* ---- ledger ---- */
+.ledger-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.stat span{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+.stat b{display:block;font-family:'Fraunces',serif;font-size:27px;margin-top:4px}
+.stat small{font-size:12.5px;color:var(--ink2)}
+.table-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);padding:13px 16px;border-bottom:1px solid var(--line);background:var(--paper)}
+td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td .cost{font-weight:800;white-space:nowrap}
+td .what{font-weight:600}
+td .sub{font-size:12.5px;color:var(--ink2)}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);position:sticky;top:76px}
+.chart-card h3{font-size:19px}
+.chart-card p{font-size:13.5px;color:var(--ink2);margin-top:3px}
+.chart-card canvas{width:100%;height:220px;margin-top:12px}
+.chart-legend{display:grid;gap:7px;margin-top:12px;font-size:13px}
+.chart-legend div{display:flex;justify-content:space-between;gap:10px}
+.chart-legend b{font-weight:700}
+.mini-form{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.mini-form input,.mini-form select{padding:11px 13px;border:1.5px solid var(--line2);border-radius:12px;background:#fff;flex:1;min-width:130px}
+.mini-form input:focus,.mini-form select:focus{outline:2px solid var(--amber);border-color:var(--amber)}
+/* ---- seasonal ---- */
+.season-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.season-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.season-card h3{font-size:20px}
+.season-card .when{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--terra);margin-top:3px}
+.season-card .prog{font-size:13px;color:var(--ink2);margin-top:8px}
+.check-row{display:flex;gap:11px;align-items:flex-start;padding:11px 2px;border-bottom:1px dashed var(--line);cursor:pointer;font-size:14.5px}
+.check-row:last-child{border-bottom:none}
+.check-row input{appearance:none;width:21px;height:21px;flex:none;border:2px solid var(--line2);border-radius:7px;margin-top:1px;cursor:pointer;position:relative;transition:all .15s;background:#fff}
+.check-row input:checked{background:var(--bronze);border-color:var(--bronze)}
+.check-row input:checked::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.check-row.done span{color:var(--ink3);text-decoration:line-through}
+/* ---- guides ---- */
+.guide{border:1px solid var(--line);border-radius:16px;background:var(--card);margin-bottom:12px;overflow:hidden}
+.g-head{width:100%;display:flex;align-items:center;gap:13px;padding:17px 19px;text-align:left}
+.g-head h3{font-size:17.5px;flex:1}
+.g-num{width:34px;height:34px;flex:none;border-radius:10px;background:var(--paper2);color:var(--bronze-d);font-family:'Fraunces',serif;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center}
+.g-plus{width:22px;height:22px;flex:none;color:var(--ink2);transition:transform .25s}
+.guide.open .g-plus{transform:rotate(45deg);color:var(--terra)}
+.g-body{display:none;padding:0 19px 18px 66px;font-size:14.5px;color:var(--ink2);line-height:1.75}
+.guide.open .g-body{display:block}
+.g-body ol{margin:6px 0 0 18px}
+.g-body li{margin-bottom:5px}
+.g-body b{color:var(--ink)}
+.g-note{margin-top:10px;font-size:13px;background:#fdf6e3;border:1px solid #ecd9ac;border-radius:10px;padding:10px 12px;color:#6d5312}
 /* @@NEXT@@ */
