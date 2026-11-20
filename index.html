@@ -341,7 +341,7 @@ footer b{color:var(--ink)}
         <button type="button" class="fchip" data-filter="attention">Needs attention · <span id="nAtt">3</span></button>
         <button type="button" class="fchip" data-filter="warranty">Warranty expired · <span id="nWar">6</span></button>
       </div>
-      <div class="peg-grid" id="pegGrid"></div>
+      <div class="peg-grid" id="pegGrid" aria-label="Appliance cards"></div>
       <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
         <button type="button" class="btn amber" id="addToggle">+ Add an appliance</button>
         <button type="button" class="btn ghost" id="coachBtn">Take the 30-second tour</button>
@@ -411,7 +411,7 @@ footer b{color:var(--ink)}
       <div class="chart-card">
         <h3>Where the money went</h3>
         <p>Repair spend per appliance, 2026. If one bar keeps growing year after year, it is cheaper to replace than repair.</p>
-        <canvas id="spendChart" width="340" height="220"></canvas>
+        <canvas id="spendChart" aria-label="Repair spend per appliance, 2026" width="340" height="220"></canvas>
         <div class="chart-legend" id="chartLegend"></div>
       </div>
     </div>
