@@ -590,4 +590,110 @@ function svgIcon(name, cls){
   }[name] || '<circle cx="12" cy="12" r="9"/>';
   return '<svg class="'+(cls||'icon')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
 }
+
+/* ---------- status math ---------- */
+function nextService(a){ return addMonths(a.lastService, a.intervalMonths); }
+function warrantyEnd(a){ return addMonths(a.bought, a.warrantyYears * 12); }
+function statusOf(a, now){
+  var days = daysUntil(nextService(a), now);
+  if (days < 0) return {key:'overdue', label:'Overdue', days:days};
+  if (days <= 60) return {key:'soon', label:'Due soon', days:days};
+  return {key:'ok', label:'On track', days:days};
+}
+function warrantyStatus(a, now){
+  var days = daysUntil(warrantyEnd(a), now);
+  if (days < 0) return {key:'expired', label:'Expired', days:days};
+  if (days <= 180) return {key:'ending', label:'Ending soon', days:days};
+  return {key:'covered', label:'Covered', days:days};
+}
+function whenText(days){
+  if (days < 0) return Math.abs(days) + ' day' + (Math.abs(days)===1?'':'s') + ' overdue';
+  if (days === 0) return 'due today';
+  if (days === 1) return 'due tomorrow';
+  return 'in ' + days + ' days';
+}
+function attentionCounts(now){
+  var c = {overdue:0, soon:0, ok:0};
+  state.appliances.forEach(function(a){ c[statusOf(a, now).key]++; });
+  return c;
+}
+function appById(id){ for (var i=0;i<state.appliances.length;i++) if (state.appliances[i].id===id) return state.appliances[i]; return null; }
+function repairsFor(id){ return state.repairs.filter(function(r){ return r.app===id; }).sort(function(a,b){ return b.date < a.date ? -1 : 1; }); }
+function totalSpent(year){
+  var t = 0;
+  state.repairs.forEach(function(r){ if (String(r.date).indexOf(String(year)) === 0) t += Number(r.cost) || 0; });
+  return t;
+}
+function spendByApp(year){
+  var m = {};
+  state.repairs.forEach(function(r){ if (String(r.date).indexOf(String(year)) === 0) m[r.app] = (m[r.app]||0) + (Number(r.cost)||0); });
+  return m;
+}
+
+/* ---------- attention board + hero ---------- */
+var currentFilter = 'all';
+function renderAttention(now){
+  var rows = state.appliances.map(function(a){ return {a:a, s:statusOf(a, now)}; })
+    .filter(function(x){ return x.s.key !== 'ok'; })
+    .sort(function(x, y){ return x.s.days - y.s.days; });
+  var c = attentionCounts(now);
+  document.getElementById('cOverdue').textContent = c.overdue;
+  document.getElementById('cSoon').textContent = c.soon;
+  document.getElementById('cOk').textContent = c.ok;
+  document.getElementById('nAll').textContent = state.appliances.length;
+  document.getElementById('nAtt').textContent = c.overdue + c.soon;
+  document.getElementById('nWar').textContent = state.appliances.filter(function(a){ return warrantyStatus(a, now).key === 'expired'; }).length;
+  document.getElementById('hsApps').textContent = state.appliances.length;
+  document.getElementById('hsOverdue').textContent = c.overdue;
+  document.getElementById('hsSpent').textContent = fmtINR(totalSpent(new Date().getFullYear()));
+  var next = null;
+  state.appliances.forEach(function(a){ var d = daysUntil(nextService(a), now); if (d >= 0 && (next === null || d < next.days)) next = {a:a, days:d}; });
+  document.getElementById('hsNext').textContent = next ? fmtDate(nextService(next.a)).replace(/ \d{4}$/, '') : '—';
+  var top = document.getElementById('topAtt');
+  if (c.overdue > 0){ top.textContent = c.overdue + ' overdue · ' + c.soon + ' due soon'; top.classList.remove('calm'); }
+  else if (c.soon > 0){ top.textContent = c.soon + ' due soon'; top.classList.remove('calm'); }
+  else { top.textContent = 'All on track'; top.classList.add('calm'); }
+  var list = document.getElementById('attList');
+  if (!rows.length){ list.innerHTML = '<div class="att-empty">Nothing needs attention right now. Every appliance is on schedule — enjoy the quiet.</div>'; return; }
+  list.innerHTML = rows.map(function(x){
+    var a = x.a, s = x.s;
+    return '<button type="button" class="att-row ' + (s.key === 'overdue' ? 'over' : s.key) + '" data-open="' + a.id + '">' +
+      '<span class="a-ic">' + svgIcon(a.icon) + '</span>' +
+      '<span class="a-tx"><b>' + esc(a.name) + '</b><span>' + esc(a.brand) + ' · ' + esc(a.room) + ' · service was due ' + fmtDate(nextService(a)) + '</span></span>' +
+      '<span class="a-when">' + whenText(s.days) + '</span></button>';
+  }).join('');
+}
+
+/* ---------- pegboard ---------- */
+function ringSVG(days, intervalMonths){
+  var total = Math.max(1, intervalMonths * 30);
+  var frac = Math.max(0, Math.min(1, days / total));
+  var circ = 2 * Math.PI * 27;
+  var col = days < 0 ? '#b3402a' : (days <= 60 ? '#c07f1a' : '#8a6d2f');
+  var label = days < 0 ? Math.abs(days) + 'd late' : days + 'd';
+  return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="#efe4cd" stroke-width="6"/>' +
+    '<circle cx="32" cy="32" r="27" fill="none" stroke="' + col + '" stroke-width="6" stroke-linecap="round" stroke-dasharray="' + (frac*circ).toFixed(1) + ' ' + circ.toFixed(1) + '"/>' +
+    '</svg><div class="rv"><b>' + label + '</b><span>LEFT</span></div>';
+}
+function renderPegboard(now){
+  var grid = document.getElementById('pegGrid');
+  var items = state.appliances.map(function(a){ return {a:a, s:statusOf(a, now), w:warrantyStatus(a, now)}; });
+  if (currentFilter === 'attention') items = items.filter(function(x){ return x.s.key !== 'ok'; });
+  if (currentFilter === 'warranty') items = items.filter(function(x){ return x.w.key === 'expired'; });
+  items.sort(function(x, y){ return x.s.days - y.s.days; });
+  if (!items.length){ grid.innerHTML = '<p class="muted" style="grid-column:1/-1;padding:18px">Nothing matches this filter. Try “All”.</p>'; return; }
+  grid.innerHTML = items.map(function(x){
+    var a = x.a, s = x.s, w = x.w;
+    var wTxt = w.key === 'expired' ? 'Warranty expired ' + fmtDate(warrantyEnd(a)) : 'Warranty till ' + fmtDate(warrantyEnd(a));
+    return '<article class="ap-card">' +
+      '<div class="ap-top"><span class="ap-ic">' + svgIcon(a.icon, 'icon lg') + '</span>' +
+      '<div><h3>' + esc(a.name) + '</h3><div class="meta">' + esc(a.brand) + ' · ' + esc(a.room) + '</div></div>' +
+      '<div class="ap-ring">' + ringSVG(s.days, a.intervalMonths) + '</div></div>' +
+      '<div class="ap-mid"><span class="pill st-' + s.key + '"><span class="dot"></span>' + s.label + ' · ' + whenText(s.days) + '</span></div>' +
+      '<div class="ap-dates">Next service: <b>' + fmtDate(nextService(a)) + '</b><br>Last serviced: <b>' + fmtDate(a.lastService) + '</b> · every ' + a.intervalMonths + ' mo<br>' + wTxt + '</div>' +
+      '<div class="ap-actions"><button type="button" class="btn amber" data-service="' + a.id + '">Mark serviced</button>' +
+      '<button type="button" class="link-btn" data-open="' + a.id + '">Details</button></div>' +
+      '</article>';
+  }).join('');
+}
 <!-- @@NEXT@@ -->
