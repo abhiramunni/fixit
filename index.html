@@ -785,4 +785,69 @@ function renderSeasonal(){
       '<div class="prog">' + (done.length === s.items.length ? 'All done — this season is sorted.' : 'Tick each job as you finish it.') + '</div>' + rows + '</div>';
   }).join('');
 }
+
+/* ---------- repair ledger + chart ---------- */
+function renderLedger(now){
+  var year = (now || new Date()).getFullYear();
+  var total = totalSpent(year);
+  var byApp = spendByApp(year);
+  document.getElementById('repTotal').textContent = fmtINR(total);
+  var rows = state.repairs.slice().sort(function(a, b){ return b.date < a.date ? -1 : 1; });
+  var costliest = rows.reduce(function(m, r){ return (Number(r.cost)||0) > (Number(m.cost)||0) ? r : m; }, rows[0] || {cost:0, what:'—'});
+  document.getElementById('repCostliest').textContent = fmtINR(costliest.cost || 0);
+  document.getElementById('repCostliestWhat').textContent = costliest.what || '—';
+  var topId = null, topAmt = 0;
+  Object.keys(byApp).forEach(function(k){ if (byApp[k] > topAmt){ topAmt = byApp[k]; topId = k; } });
+  document.getElementById('repTopApp').textContent = topId ? (appById(topId) ? appById(topId).name.split(' ')[0] : topId) : '—';
+  document.getElementById('repTopAppAmt').textContent = topId ? fmtINR(topAmt) + ' · ' + Math.round(topAmt / Math.max(1, total) * 100) + '% of spend' : '—';
+  var body = document.getElementById('repairBody');
+  if (!rows.length){ body.innerHTML = '<tr><td colspan="4" class="muted">No repairs logged yet. When something gets fixed, log it here — the chart will tell you when an appliance costs more than it is worth.</td></tr>'; }
+  else {
+    body.innerHTML = rows.map(function(r){
+      var a = appById(r.app);
+      return '<tr><td><div class="what">' + esc(r.what) + '</div><div class="sub">' + (a ? esc(a.name) : esc(r.app)) + '</div></td>' +
+        '<td>' + fmtDate(r.date) + '</td><td style="text-align:right"><span class="cost">' + fmtINR(r.cost) + '</span></td>' +
+        '<td style="text-align:right"><button type="button" class="link-btn" data-delrep="' + r.id + '">Delete</button></td></tr>';
+    }).join('');
+  }
+  drawChart(byApp, total);
+  var sel = document.getElementById('repApp');
+  var cur = sel.value;
+  sel.innerHTML = state.appliances.map(function(a){ return '<option value="' + a.id + '">' + esc(a.name) + '</option>'; }).join('');
+  if (cur && appById(cur)) sel.value = cur;
+}
+function drawChart(byApp, total){
+  var cv = document.getElementById('spendChart');
+  if (!cv) return;
+  var ctx = cv.getContext && cv.getContext('2d');
+  var entries = Object.keys(byApp).map(function(k){
+    var a = appById(k);
+    return {name: a ? a.name : k, amt: byApp[k]};
+  }).sort(function(x, y){ return y.amt - x.amt; }).slice(0, 6);
+  var legend = document.getElementById('chartLegend');
+  legend.innerHTML = entries.map(function(e){
+    return '<div><span>' + esc(e.name) + '</span><b>' + fmtINR(e.amt) + '</b></div>';
+  }).join('') || '<div class="muted">No spend logged for this year yet.</div>';
+  if (!ctx) return;
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!entries.length) return;
+  var max = Math.max.apply(null, entries.map(function(e){ return e.amt; }));
+  var bw = Math.min(46, (W - 20) / entries.length - 14);
+  var gap = (W - bw * entries.length) / (entries.length + 1);
+  var colors = ['#c05b2e', '#b07d3c', '#e8a33d', '#8a5f27', '#d9a05b', '#a08a5c'];
+  entries.forEach(function(e, i){
+    var h = Math.max(6, (e.amt / max) * (H - 46));
+    var x = gap + i * (bw + gap), y = H - 26 - h;
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.beginPath();
+    if (ctx.roundRect) { ctx.roundRect(x, y, bw, h, [6, 6, 0, 0]); ctx.fill(); }
+    else { ctx.fillRect(x, y, bw, h); }
+    ctx.fillStyle = '#2b1d12'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(fmtINR(e.amt), x + bw / 2, y - 6);
+    ctx.fillStyle = '#6b5844'; ctx.font = '11px Inter, sans-serif';
+    var nm = e.name.length > 9 ? e.name.slice(0, 9) + '…' : e.name;
+    ctx.fillText(nm, x + bw / 2, H - 8);
+  });
+}
 <!-- @@NEXT@@ -->
