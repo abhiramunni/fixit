@@ -331,4 +331,21 @@ footer b{color:var(--ink)}
       <div class="att-list" id="attList"></div>
     </div>
   </section>
+
+  <section class="block" id="pegboard">
+    <div class="sec-head"><span class="kicker">The pegboard</span><h2>Everything in your home, on one wall</h2></div>
+    <p class="sec-sub">Each card is one appliance. The ring shows how much of its service interval is left — when it runs out, the card moves to the attention board.</p>
+    <div class="pegboard">
+      <div class="chips" id="filterChips" role="group" aria-label="Filter appliances">
+        <button type="button" class="fchip on" data-filter="all">All · <span id="nAll">10</span></button>
+        <button type="button" class="fchip" data-filter="attention">Needs attention · <span id="nAtt">3</span></button>
+        <button type="button" class="fchip" data-filter="warranty">Warranty expired · <span id="nWar">6</span></button>
+      </div>
+      <div class="peg-grid" id="pegGrid"></div>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+        <button type="button" class="btn amber" id="addToggle">+ Add an appliance</button>
+        <button type="button" class="btn ghost" id="coachBtn">Take the 30-second tour</button>
+      </div>
+    </div>
+  </section>
 <!-- @@NEXT@@ -->
