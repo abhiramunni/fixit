@@ -850,4 +850,52 @@ function drawChart(byApp, total){
     ctx.fillText(nm, x + bw / 2, H - 8);
   });
 }
+
+/* ---------- guides ---------- */
+function renderGuides(){
+  var list = document.getElementById('guideList');
+  list.innerHTML = GUIDES.map(function(g, i){
+    return '<div class="guide" data-guide="' + i + '">' +
+      '<button type="button" class="g-head" data-gtoggle="' + i + '"><span class="g-num">' + (i+1) + '</span><h3>' + esc(g.t) + '</h3>' +
+      '<svg class="g-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>' +
+      '<div class="g-body"><ol>' + g.steps.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' +
+      '<div class="g-note"><b>When to stop:</b> ' + esc(g.note) + '</div></div></div>';
+  }).join('');
+}
+
+/* ---------- drawer ---------- */
+var drawerApp = null;
+function openDrawer(id){
+  var a = appById(id); if (!a) return;
+  drawerApp = id;
+  var s = statusOf(a), w = warrantyStatus(a);
+  var reps = repairsFor(id);
+  var spent = reps.reduce(function(t, r){ return t + (Number(r.cost)||0); }, 0);
+  var cons = state.consumables.filter(function(c){ return c.app === id; });
+  document.getElementById('drawerBody').innerHTML =
+    '<span class="pill st-' + s.key + '"><span class="dot"></span>' + s.label + ' · ' + whenText(s.days) + '</span>' +
+    '<h2>' + esc(a.name) + '</h2><div class="d-meta">' + esc(a.brand) + ' · ' + esc(a.room) + ' · bought ' + fmtDate(a.bought) + '</div>' +
+    '<div class="d-sec"><h4>Service</h4>' +
+    '<div class="kv"><span>Last serviced</span><b>' + fmtDate(a.lastService) + '</b></div>' +
+    '<div class="kv"><span>Next service due</span><b>' + fmtDate(nextService(a)) + '</b></div>' +
+    '<div class="kv"><span>Service interval</span><b>Every ' + a.intervalMonths + ' months</b></div>' +
+    '<button type="button" class="btn amber" data-service="' + a.id + '">Mark serviced today</button></div>' +
+    '<div class="d-sec"><h4>Warranty</h4>' +
+    '<div class="kv"><span>Warranty ends</span><b>' + fmtDate(warrantyEnd(a)) + '</b></div>' +
+    '<div class="kv"><span>Status</span><b>' + w.label + (w.days >= 0 ? ' · ' + w.days + ' days left' : ' · ' + Math.abs(w.days) + ' days ago') + '</b></div></div>' +
+    (cons.length ? '<div class="d-sec"><h4>Parts on this appliance</h4>' + cons.map(function(c){
+      var due = addMonths(c.last, c.everyMonths);
+      return '<div class="kv"><span>' + esc(c.name) + '</span><b>' + whenText(daysUntil(due)) + '</b></div>';
+    }).join('') + '</div>' : '') +
+    '<div class="d-sec"><h4>Repair history · ' + fmtINR(spent) + ' total</h4>' +
+    (reps.length ? reps.map(function(r){ return '<div class="kv"><span>' + esc(r.what) + ' · ' + fmtDate(r.date) + '</span><b>' + fmtINR(r.cost) + '</b></div>'; }).join('') : '<p class="small muted">No repairs logged for this appliance yet.</p>') + '</div>' +
+    '<div class="d-sec"><button type="button" class="btn ghost" data-delapp="' + a.id + '">Remove this appliance</button></div>';
+  document.getElementById('drawer').classList.add('show');
+  document.getElementById('drawerVeil').classList.add('show');
+}
+function closeDrawer(){
+  drawerApp = null;
+  document.getElementById('drawer').classList.remove('show');
+  document.getElementById('drawerVeil').classList.remove('show');
+}
 <!-- @@NEXT@@ -->
