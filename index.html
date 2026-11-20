@@ -487,4 +487,107 @@ footer b{color:var(--ink)}
 </div>
 
 <div id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* ---------- date + money helpers ---------- */
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function parseD(s){ var p = String(s).split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function iso(d){ function z(n){ return (n<10?'0':'')+n; } return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+function startOf(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function todayStr(now){ return iso(startOf(now || new Date())); }
+function addMonths(dateStr, months){
+  var d = parseD(dateStr), day = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth()+months);
+  var last = new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  d.setDate(Math.min(day, last));
+  return iso(d);
+}
+function daysUntil(dateStr, now){
+  var t = startOf(now || new Date()).getTime();
+  return Math.round((startOf(parseD(dateStr)).getTime() - t) / 86400000);
+}
+function fmtDate(s){ var d = parseD(s); return d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear(); }
+function fmtINR(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid(p){ return p + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36); }
+
+/* ---------- seed data (a typical Indian home, as of 20 Nov 2026) ---------- */
+var SEED = {
+  appliances: [
+    {id:'ac', name:'Split AC 1.5T', brand:'Voltas', room:'Living room', bought:'2024-04-18', warrantyYears:5, lastService:'2026-03-15', intervalMonths:6, icon:'ac'},
+    {id:'fridge', name:'Refrigerator 320L', brand:'LG', room:'Kitchen', bought:'2023-03-12', warrantyYears:5, lastService:'2026-06-02', intervalMonths:12, icon:'fridge'},
+    {id:'wm', name:'Washing Machine 7kg', brand:'Samsung', room:'Utility', bought:'2022-07-07', warrantyYears:2, lastService:'2026-10-10', intervalMonths:6, icon:'wm'},
+    {id:'ro', name:'RO Water Purifier', brand:'Kent', room:'Kitchen', bought:'2024-01-05', warrantyYears:1, lastService:'2026-08-12', intervalMonths:6, icon:'ro'},
+    {id:'geyser', name:'Geyser 25L', brand:'AO Smith', room:'Bathroom', bought:'2023-11-09', warrantyYears:7, lastService:'2026-01-05', intervalMonths:12, icon:'geyser'},
+    {id:'fans', name:'Ceiling Fans ×4', brand:'Crompton', room:'All rooms', bought:'2022-05-20', warrantyYears:2, lastService:'2026-09-22', intervalMonths:12, icon:'fan'},
+    {id:'mixer', name:'Mixer Grinder', brand:'Preethi', room:'Kitchen', bought:'2024-02-14', warrantyYears:2, lastService:'2026-03-08', intervalMonths:12, icon:'mixer'},
+    {id:'inverter', name:'Inverter + Battery', brand:'Luminous', room:'Utility', bought:'2023-06-30', warrantyYears:2, lastService:'2026-11-01', intervalMonths:3, icon:'inverter'},
+    {id:'chimney', name:'Kitchen Chimney', brand:'Elica', room:'Kitchen', bought:'2023-08-11', warrantyYears:5, lastService:'2026-09-20', intervalMonths:3, icon:'chimney'},
+    {id:'micro', name:'Microwave Oven', brand:'IFB', room:'Kitchen', bought:'2025-02-03', warrantyYears:1, lastService:'2026-02-03', intervalMonths:12, icon:'micro'}
+  ],
+  repairs: [
+    {id:'r1', app:'ac', what:'Gas top-up + deep clean', date:'2026-06-14', cost:2800},
+    {id:'r2', app:'ro', what:'RO membrane replacement', date:'2026-08-12', cost:1850},
+    {id:'r3', app:'wm', what:'Drum belt replacement', date:'2026-10-10', cost:1150},
+    {id:'r4', app:'geyser', what:'Thermostat replacement', date:'2026-01-05', cost:950},
+    {id:'r5', app:'mixer', what:'Jar blade set', date:'2026-03-08', cost:420},
+    {id:'r6', app:'fans', what:'Capacitor (bedroom fan)', date:'2026-09-22', cost:350}
+  ],
+  consumables: [
+    {id:'c1', name:'RO pre-filter', app:'ro', last:'2026-08-12', everyMonths:6, note:'Protects the membrane — the ₹450 part that saves a ₹1,850 one.'},
+    {id:'c2', name:'RO membrane', app:'ro', last:'2026-08-12', everyMonths:24, note:'Change when the TDS creeps up or the flow slows to a trickle.'},
+    {id:'c3', name:'AC filter clean', app:'ac', last:'2026-11-02', everyMonths:1, note:'A dusty filter adds 10–15% to the power bill. Rinse, dry, refit.'},
+    {id:'c4', name:'Chimney baffle filter', app:'chimney', last:'2026-09-20', everyMonths:3, note:'Soak in hot water + dishwash liquid. Never scrub with steel wool.'},
+    {id:'c5', name:'Inverter battery water', app:'inverter', last:'2026-11-01', everyMonths:3, note:'Distilled water only, up to the mark — never tap water, never overfill.'},
+    {id:'c6', name:'Geyser anode-rod check', app:'geyser', last:'2026-01-05', everyMonths:12, note:'A worn anode lets the tank rust from inside. A ₹600 rod saves a ₹9,000 tank.'}
+  ],
+  seasonal: {
+    summer: {label:'Pre-summer', when:'March', items:['AC deep service + gas check','Fan speed + capacitor check','Fridge coil clean (back panel)','Inverter battery water top-up']},
+    monsoon: {label:'Pre-monsoon', when:'May', items:['Roof + gutter check for leaks','Window and door seals','Inverter full-charge test','Mosquito mesh on vents']},
+    winter: {label:'Winter', when:'November', items:['Geyser descaling + thermostat check','Chimney deep clean','Water heater safety valve test','Blanket + heater storage check']}
+  },
+  seasonalDone: {summer:[], monsoon:[], winter:[]},
+  samples: true
+};
+var GUIDES = [
+  {t:'Clean your split-AC filters in 10 minutes', steps:['Switch the AC off at the wall, not just the remote.','Open the front panel and slide both mesh filters out.','Rinse under a tap, brush gently, and dry fully in shade — never in sun.','Slide them back until they click, close the panel, switch on.','Do this every month in summer; the air gets colder and the bill gets smaller.'], note:'If the AC still cools poorly after a clean filter, that is a gas or coil job — call a technician.'},
+  {t:'Change an RO pre-filter without flooding the kitchen', steps:['Close the inlet tap and switch the purifier off.','Keep a towel and a bowl under the filter housing.','Unscrew the housing, note which way the old filter sat, and fit the new one the same way.','Hand-tighten only, open the tap slowly, and check for drips for two minutes.','Run the purifier for 10 minutes and discard the first litre.'], note:'Never use tap water inside the housing to “rinse” it — that defeats the filter.'},
+  {t:'Geyser care: descaling and the anode rod', steps:['Switch the geyser off and let the water cool fully.','Descaling and anode-rod checks are annual jobs — book them with the service, don’t improvise.','Between services, watch for three signs: rusty water, a humming tank, or water that never gets fully hot.','Keep the thermostat at 50–55°C — hotter water scales the tank faster and wastes power.'], note:'Never open a geyser’s electrical cover yourself. Water + mains power is a job for a qualified technician, always.'},
+  {t:'Ceiling fan slow? The capacitor fix', steps:['A fan that hums, starts slowly, or only runs on high speed usually has a weak capacitor.','Switch off the fan at the wall and confirm it is fully stopped.','The capacitor sits in the top canopy — a small black cylinder, usually 2.5 µF.','A technician swaps it in 10 minutes for about ₹250–400 including the part.','If the fan wobbles after the swap, the blades need balancing, not more speed.'], note:'Do not climb a ladder to a spinning or live fan. If you are not steady on a ladder, this is a ₹300 technician visit.'},
+  {t:'Chimney baffle filters: soak, don’t scrub', steps:['Remove the baffle filters and drop them in a bucket of hot water with dishwash liquid.','Soak 30 minutes — the grease lifts off on its own.','Rinse, dry fully, and refit. Do this every 3 months.','Wipe the inside of the hood with the same soapy water while the filters soak.'], note:'Steel wool scratches the baffle mesh and makes grease stick worse next time.'},
+  {t:'Inverter battery water: the distilled-water rule', steps:['Check the level every 3 months, with the inverter switched off.','Top up only with distilled water, only up to the marked line.','Wipe the terminals clean and smear a little petroleum jelly on them to stop corrosion.','If one cell keeps dropping faster than the others, the battery is ageing — get it tested.'], note:'Never use tap water or acid. Tap water minerals kill a battery in months.'}
+];
+/* ---------- state ---------- */
+var KEY = 'fixit_v1';
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function load(){
+  try { var raw = localStorage.getItem(KEY); if (raw) { var s = JSON.parse(raw); if (s && s.appliances) return s; } } catch (e) {}
+  return null;
+}
+var state = load() || clone(SEED);
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+if (!load()) save();
+
+/* ---------- icons (inline SVG, no emoji) ---------- */
+function svgIcon(name, cls){
+  var p = {
+    ac:'<rect x="3" y="7" width="18" height="9" rx="2"/><circle cx="9" cy="11.5" r="2.4"/><path d="M15 10h4M15 13h4"/>',
+    fridge:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M6 10h12M9 6.5h.01"/>',
+    wm:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4.5"/><path d="M7 7h4"/>',
+    ro:'<path d="M12 3s6 6.2 6 10.2a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"/>',
+    geyser:'<rect x="6" y="4" width="12" height="13" rx="2"/><path d="M9 20c1.5 1.5 4.5 1.5 6 0M9 8h6"/>',
+    fan:'<circle cx="12" cy="12" r="2"/><path d="M12 10V4.5M12 14v5.5M10 12H4.5M14 12h5.5"/>',
+    mixer:'<path d="M8 3h8l-1 9H9L8 3z"/><path d="M9 12h6v3a3 3 0 0 1-6 0v-3zM12 18v3"/>',
+    inverter:'<rect x="3" y="8" width="18" height="11" rx="2"/><path d="M13 10.5 10.5 13.5H13l-2 3"/>',
+    chimney:'<path d="M4 8h16l-2 4H6L4 8zM8 12h8l1 8H7l1-8z"/>',
+    micro:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M15 5v14M6 9h6M6 12h6"/>',
+    wrench:'<path d="M14.7 6.3a4.5 4.5 0 0 0-6 6L3 18l3 3 5.7-5.7a4.5 4.5 0 0 0 6-6L14 13l-3-3 3.7-3.7z"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    alert:'<path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9.5V14M12 17h.01"/>',
+    check:'<path d="M4 12.5 9.5 18 20 6.5"/>',
+    drop:'<path d="M12 3s6 6.2 6 10.2a6 6 0 0 1-12 0C6 9.2 12 3 12 3z"/>'
+  }[name] || '<circle cx="12" cy="12" r="9"/>';
+  return '<svg class="'+(cls||'icon')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+}
 <!-- @@NEXT@@ -->
