@@ -29,12 +29,12 @@ Every appliance, every service date, every rupee. FixIt keeps your whole home ru
 
 ## Tech
 
-Single self-contained `index.html` (no backend, no build step). Warm editorial palette (ivory paper, espresso ink, bronze/amber/terracotta), Fraunces + Inter, two embedded AI-generated warm-editorial photographs with slow Ken Burns drift, inline SVG icons only (no emoji). Data persists in `localStorage` under `fixit_v1`; a two-tap **Erase everything** resets to the sample home.
+Single self-contained `index.html` (no backend, no build step). Warm editorial palette (ivory paper, espresso ink, bronze/amber/terracotta), Fraunces + Inter, two AI-generated warm-editorial photographs (fixit-hero.webp, fixit-flatlay.webp) with slow Ken Burns drift, inline SVG icons only (no emoji). Data persists in `localStorage` under `fixit_v1`; a two-tap **Erase everything** resets to the sample home.
 
 ## QA
 
 - 94/94 headless jsdom assertions pass (date maths, status bands, warranty maths, totals, all renders, filters, drawer, guides, mark-serviced, mark-changed, add-repair, add-appliance, seasonal ticks, copy summary, intro skip, erase-all).
-- `node --check` on the extracted script: clean. Zero uncaught JS errors. Structural check: exactly one `<style>`, `<head>`, `<body>`, `<script>`; zero leftover chunk markers; exactly two embedded images.
+- `node --check` on the extracted script: clean. Zero uncaught JS errors. Structural check: exactly one `<style>`, `<head>`, `<body>`, `<script>`; zero leftover chunk markers; two AI-generated warm-editorial photographs (fixit-hero.webp, fixit-flatlay.webp).
 
 ## Files
 
@@ -42,3 +42,5 @@ Single self-contained `index.html` (no backend, no build step). Warm editorial p
 - `README.md` — this file
 - `qa-test.js` — the jsdom QA harness (`node qa-test.js`)
 - `build.py` — chunk assembler with structural validation
+
+Verified live 20 Nov 2026: renders with hero, attention board (1 overdue / 2 due soon) and 10 appliance cards. QA 94/94 jsdom assertions, node --check clean.
