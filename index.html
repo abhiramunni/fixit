@@ -422,4 +422,32 @@ footer b{color:var(--ink)}
     <p class="sec-sub">Twelve small jobs a year, done before the weather turns. Tick them off as you go — your ticks are saved on this device.</p>
     <div class="season-grid" id="seasonalWrap"></div>
   </section>
+
+  <section class="block" id="guides">
+    <div class="sec-head"><span class="kicker">Do it yourself, safely</span><h2>Fix-it guides</h2></div>
+    <p class="sec-sub">Six jobs most homes pay a technician for. Each takes under half an hour — and each one says clearly when to stop and call a professional.</p>
+    <div id="guideList"></div>
+  </section>
+
+  <section class="block" id="addSection">
+    <div class="sec-head"><span class="kicker">Add to the wall</span><h2>Add an appliance</h2></div>
+    <p class="sec-sub">Bought something new? Put it on the pegboard in ten seconds and FixIt will remind you when it needs attention.</p>
+    <div class="form-card">
+      <form id="apForm">
+        <div class="form-grid">
+          <div class="field"><label for="apName">Appliance name</label><input id="apName" type="text" placeholder="e.g. Air Cooler" required maxlength="40"></div>
+          <div class="field"><label for="apBrand">Brand</label><input id="apBrand" type="text" placeholder="e.g. Symphony" maxlength="30"></div>
+          <div class="field"><label for="apRoom">Room</label><input id="apRoom" type="text" placeholder="e.g. Bedroom" maxlength="20"></div>
+          <div class="field"><label for="apBought">Bought on</label><input id="apBought" type="date" required></div>
+          <div class="field"><label for="apWarranty">Warranty (years)</label><input id="apWarranty" type="number" min="0" max="10" value="1" required></div>
+          <div class="field"><label for="apInterval">Service every (months)</label><input id="apInterval" type="number" min="1" max="24" value="12" required></div>
+          <div class="field"><label for="apLast">Last serviced</label><input id="apLast" type="date" required></div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn amber">Add to the pegboard</button>
+          <button type="button" class="btn ghost" id="apReset">Clear the form</button>
+        </div>
+      </form>
+    </div>
+  </section>
 <!-- @@NEXT@@ -->
