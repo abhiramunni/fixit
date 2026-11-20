@@ -301,4 +301,34 @@ footer b{color:var(--ink)}
     </div>
   </div>
 </header>
+
+<main class="wrap" id="top">
+  <section class="hero">
+    <div class="hero-photo"><img src="{{HERO_IMG}}" alt="A tidy home workbench in golden light — spanner, screwdriver, multimeter and copper wire on worn oak"></div>
+    <div class="hero-copy">
+      <h1>Your home, looked after — before things break.</h1>
+      <p>FixIt remembers every service date, warranty and filter change, so a ₹350 capacitor never becomes a ₹8,000 motor.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><b id="hsApps">10</b><span>Appliances</span></div>
+        <div class="hero-stat"><b id="hsOverdue">1</b><span>Overdue</span></div>
+        <div class="hero-stat"><b id="hsSpent">₹7,520</b><span>Repairs in 2026</span></div>
+        <div class="hero-stat"><b id="hsNext">—</b><span>Next service</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="attention" aria-label="Needs attention">
+    <div class="att-card">
+      <div class="att-head">
+        <h2>The attention board</h2>
+        <div class="att-counts">
+          <span class="count-chip over"><b id="cOverdue">1</b> overdue</span>
+          <span class="count-chip soon"><b id="cSoon">2</b> due soon</span>
+          <span class="count-chip ok"><b id="cOk">7</b> all good</span>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:6px">“Due soon” means within 60 days. Tap any row to open that appliance’s file.</p>
+      <div class="att-list" id="attList"></div>
+    </div>
+  </section>
 <!-- @@NEXT@@ -->
